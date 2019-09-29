@@ -1,0 +1,37 @@
+{
+    "name": "xiongchao/laravel-zookeeper",
+    "description": "zookeeper package for laravel",
+    "keywords":[
+        "zookeeper",
+        "laravel",
+        "zk"
+    ],
+    "type": "library",
+    "require": {
+        "php": ">=7.0",
+        "illuminate/container": "^7.0@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "BigBoom\\Zookeeper\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "BigBoom\\Zookeeper\\ZookeeperServiceProvider"
+            ],
+            "alias": {
+                "zk": "BigBoom\\Zookeeper\\Facades\\Zk"
+            }
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "xiongchao",
+            "email": "xiongchao0117@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
