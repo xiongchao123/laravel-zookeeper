@@ -4,7 +4,7 @@ namespace BigBoom\Zookeeper\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ZK extends Facade
+class Zk extends Facade
 {
     protected static function getFacadeAccessor ()
     {

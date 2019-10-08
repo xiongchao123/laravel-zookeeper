@@ -9,7 +9,7 @@
 return [
     'host' => env('ZK_HOST', '127.0.0.1:2181'),
     'is_watch' => false,
-    'watcher' => '',  // e.g
+    'watcher' => '',  // e.g.
     'watch_recv_timeout' => 10000,
 //    'path' => env('ZK_PATH', ''),
 	'cache' => storage_path('zookeeper')

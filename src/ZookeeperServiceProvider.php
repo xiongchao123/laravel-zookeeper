@@ -39,14 +39,14 @@ class ZookeeperServiceProvider extends ServiceProvider
      */
     protected function registerServer()
     {
-        $this->app->singleton(ZK::class, function ($app) {
+        $this->app->singleton(Zk::class, function ($app) {
             if (is_null(static::$server)) {
                 $this->createZookeeperServer();
             }
             return static::$server;
         });
 
-        $this->app->alias(ZK::class, 'zk');
+        $this->app->alias(Zk::class, 'zk');
     }
 
     /**
