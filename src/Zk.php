@@ -139,6 +139,8 @@ class Zk
 
     public function create(string $node, string $contents, ?int $flags = 0, ?array $acl = null): string
     {
+        $node = $this->formatNodePath($node);
+
         $acl = $acl ?? [["perms" => Zookeeper::PERM_ALL, "scheme" => "world", "id" => "anyone"]];
         $result = $this->zk->create($node, $contents, $acl, $flags);
 
@@ -147,6 +149,8 @@ class Zk
 
     public function get(string $node, callable $watcherCallback = null, array &$stat = null, int $maxSize = 0): string
     {
+        $node = $this->formatNodePath($node);
+
         $nodeContents = $this->zk->get($node, $watcherCallback, $stat, $maxSize);
         if ($nodeContents === false) {
             throw new NodeException(sprintf('Could not access node %s', $node), 1);
@@ -157,12 +161,16 @@ class Zk
 
     public function set(string $node, string $data): bool
     {
+        $node = $this->formatNodePath($node);
+
         $result = $this->zk->set($node, $data);
         return (bool)$result;
     }
 
     public function getChildren(string $node, ?callable $watcherCallback = null): array
     {
+        $node = $this->formatNodePath($node);
+
         $children = $this->zk->getChildren($node, $watcherCallback);
         if ($children === false) {
             throw new NodeException(sprintf('Could not list children of node %s', $node), 2);
@@ -172,6 +180,8 @@ class Zk
 
     public function exists(string $node, ?callable $watcherCallback = null): bool
     {
+        $node = $this->formatNodePath($node);
+
         $exists = $this->zk->exists($node, $watcherCallback);
         return !empty($exists);
     }
@@ -197,6 +207,41 @@ class Zk
         } catch (Throwable $e) {
             return false;
         }
+    }
+
+    public function addAuth(string $scheme, string $cert, callable $completionCb)
+    {
+        return $this->zk->addAuth($scheme, $cert, $completionCb);
+    }
+
+    private function formatNodePath(string $node): string
+    {
+        $node = trim($node, '/');
+        // regex to find invalid characters
+        $pattern = '/' .
+            '[' . // Start range match
+            "\u{1}-\u{19}\u{7f}-\u{9f}" . // These don't display well, so zookeeper won't allow them
+            "\u{d800}-\u{f8fff}\u{fff0}-\u{ffff}\u{f0000}-\u{fffff}" . // These following sequences are not allowed
+            "\u{1fffe}-\u{1ffff}\u{2fffe}-\u{2ffff}\u{3fffe}-\u{3ffff}\u{4fffe}-\u{4ffff}" .
+            "\u{5fffe}-\u{5ffff}\u{6fffe}-\u{6ffff}\u{7fffe}-\u{7ffff}\u{8fffe}-\u{8ffff}" .
+            "\u{9fffe}-\u{9ffff}\u{afffe}-\u{affff}\u{bfffe}-\u{bffff}\u{cfffe}-\u{cffff}" .
+            "\u{dfffe}-\u{dffff}\u{efffe}-\u{effff}" .
+            "]" . // Close range match
+            "/";
+        $node = preg_replace($pattern, '', $node);
+        $node = str_replace("\0", '', $node); // Now strip null bytes
+        if (array_intersect(explode('/', trim($node, '/')), ['.', '..', 'zookeeper'])) {
+            throw new Exception(sprintf('%s is an invalid path!', $node), 3);
+        }
+        return '/' . trim(preg_replace('@//+@', '/', $node), '/');
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function getState(): int
+    {
+        return (int)$this->zk->getState();
     }
 
     public function lock(string $key, int $timeout = 0): ?string
@@ -348,40 +393,5 @@ class Zk
             }
         }
         return false;
-    }
-
-    public function addAuth(string $scheme, string $cert, callable $completionCb)
-    {
-        return $this->zk->addAuth($scheme, $cert, $completionCb);
-    }
-
-    private function formatNodePath(string $node): string
-    {
-        $node = trim($node, '/');
-        // regex to find invalid characters
-        $pattern = '/' .
-            '[' . // Start range match
-            "\u{1}-\u{19}\u{7f}-\u{9f}" . // These don't display well, so zookeeper won't allow them
-            "\u{d800}-\u{f8fff}\u{fff0}-\u{ffff}\u{f0000}-\u{fffff}" . // These following sequences are not allowed
-            "\u{1fffe}-\u{1ffff}\u{2fffe}-\u{2ffff}\u{3fffe}-\u{3ffff}\u{4fffe}-\u{4ffff}" .
-            "\u{5fffe}-\u{5ffff}\u{6fffe}-\u{6ffff}\u{7fffe}-\u{7ffff}\u{8fffe}-\u{8ffff}" .
-            "\u{9fffe}-\u{9ffff}\u{afffe}-\u{affff}\u{bfffe}-\u{bffff}\u{cfffe}-\u{cffff}" .
-            "\u{dfffe}-\u{dffff}\u{efffe}-\u{effff}" .
-            "]" . // Close range match
-            "/";
-        $node = preg_replace($pattern, '', $node);
-        $node = str_replace("\0", '', $node); // Now strip null bytes
-        if (array_intersect(explode('/', trim($node, '/')), ['.', '..', 'zookeeper'])) {
-            throw new Exception(sprintf('%s is an invalid path!', $node), 3);
-        }
-        return '/' . trim(preg_replace('@//+@', '/', $node), '/');
-    }
-
-    /**
-     * @throws Throwable
-     */
-    private function getState(): int
-    {
-        return (int)$this->zk->getState();
     }
 }
