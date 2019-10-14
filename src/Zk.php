@@ -59,7 +59,7 @@ class Zk
     /**
      * @param string $framework
      */
-    protected function setFramework(string $framework)
+    protected function setFramework(string $framework): void
     {
         $framework = strtolower($framework);
 
@@ -71,9 +71,17 @@ class Zk
     }
 
     /**
+     * @return string
+     */
+    public function getFramework(): string
+    {
+        return $this->framework;
+    }
+
+    /**
      * @param array $config
      */
-    protected function setConfig(array $config)
+    protected function setConfig(array $config): void
     {
         $this->config = $config;
     }
@@ -81,7 +89,7 @@ class Zk
     /**
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -287,6 +295,7 @@ class Zk
         $lockName = $this->getLockName($key);
         return !$this->waitForLock($lockName, $lockName, 0, $mode);
     }
+
     /**
      * @param string $key
      * @return string
