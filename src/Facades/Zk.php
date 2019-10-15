@@ -15,17 +15,18 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool remove(string $node): bool
  * @method static bool ensurePath(string $node): bool
  * @method static bool addAuth(string $scheme, string $cert, callable $completionCb)
- * @method static ?string lock(string $key, int $timeout = 0): ?string
- * @method static ?string writeLock(string $key, int $timeout = 0): ?string
- * @method static ?string readLock(string $key, int $timeout = 0): ?string
+ * @method static string lock(string $key, int $timeout = 0): ?string
+ * @method static string writeLock(string $key, int $timeout = 0): ?string
+ * @method static string readLock(string $key, int $timeout = 0): ?string
  * @method static bool unlock(string $key): bool
+ * @method static bool isLocked(string $key, string $mode = 'exclusive') : bool
  *
  * @package BigBoom\Zookeeper\Facades
  * @see \BigBoom\Zookeeper\Zk;
  */
 class Zk extends Facade
 {
-    protected static function getFacadeAccessor ()
+    protected static function getFacadeAccessor()
     {
         return 'zk';
     }

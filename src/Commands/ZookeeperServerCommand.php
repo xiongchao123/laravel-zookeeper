@@ -3,8 +3,6 @@
 namespace BigBoom\Zookeeper\Commands;
 
 use Illuminate\Console\Command;
-use BigBoom\Zookeeper\Zk;
-use Symfony\Component\Process\Process;
 
 class ZookeeperServerCommand extends Command
 {
@@ -14,18 +12,18 @@ class ZookeeperServerCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'zookeeper:server {action : start|cache}';
+    protected $signature = 'zookeeper:server {action : watch|info}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Zookeeper Cache config';
+    protected $description = 'Zookeeper watch config';
 
     /**
      * The console command action. start|cache
-     * 
+     *
      * @var string
      */
     protected $action;
@@ -37,24 +35,34 @@ class ZookeeperServerCommand extends Command
      */
     protected $config;
 
+    protected $allowedActions;
+
     /**
      * Excute the console command.
      *
      */
-    public function handle ()
+    public function handle()
     {
-        $this->checkEnviroment();
+        $this->setAllowedActions();
+        $this->checkEnvironment();
         $this->loadConfig();
         $this->initAction();
         $this->runAction();
     }
 
-    /**
-     * Check running enviroment
-     */
-    protected function checkEnviroment ()
+    protected function setAllowedActions()
     {
-        if (! extension_loaded('zookeeper')) {
+        $this->allowedActions = [
+            'watch', 'info'
+        ];
+    }
+
+    /**
+     * Check running environment
+     */
+    protected function checkEnvironment()
+    {
+        if (!extension_loaded('zookeeper')) {
             $this->error("Can't detect zookeeper extension installed.");
 
             exit(1);
@@ -64,54 +72,46 @@ class ZookeeperServerCommand extends Command
     /**
      * Load configs
      */
-    protected function loadConfig ()
+    protected function loadConfig()
     {
         $this->config = $this->laravel->make('config')->get('zk_config');
     }
 
     /**
-     * Intitalize command action
+     * Initialize command action
      */
-    protected function initAction ()
+    protected function initAction()
     {
         $this->action = $this->argument('action');
 
-        if (! in_array($this->action, ['start', 'cache'], true)) {
-            $this->error("Invalid argument '{$this->action}' . Expected 'start', 'stop', 'restart'.");
+        if (!in_array($this->action, $this->allowedActions, true)) {
+            $this->error("Invalid argument '{$this->action}' . Expected { " . implode(',', $this->allowedActions) . " } .");
         }
     }
 
     /**
      * Run action
      */
-    protected function runAction ()
+    protected function runAction()
     {
-        $this->{$this->action}();
-    }
-
-    /**
-     * Start
-     */
-    protected function start ()
-    {
-        $zk = $this->laravel->make(Zk::class);
-        $zk->run();
-        $this->info("Zoookeeper data cached to {$this->config['cache']}/config.php successfully!");
-        $this->info("Please Enter 'Ctrl + C' to Stop ");
-        while (true) {
-            sleep(1);
+        switch ($this->action) {
+            case "info":
+                $this->showInfo();
+                break;
+            case "watch":
+                $this->watch();
+                break;
         }
     }
 
-    /**
-     * Cache
-     */
-    protected function cache ()
+    public function showInfo()
     {
-        $zk = $this->laravel->make(Zk::class);
-        $zk->cache();
-        $this->info("Zoookeeper data cached to {$this->config['cache']}/config.php successfully!");
+        $this->info("Zookeeper Info:");
+        $this->info(shell_exec("php --ri zookeeper"));
     }
 
-
+    protected function watch()
+    {
+        $this->info("watching...");
+    }
 }
