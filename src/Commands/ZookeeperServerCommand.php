@@ -112,6 +112,6 @@ class ZookeeperServerCommand extends Command
 
     protected function watch()
     {
-        $this->info("watching...");
+        $this->info("watching.....");
     }
 }
