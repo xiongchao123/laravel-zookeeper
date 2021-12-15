@@ -28,6 +28,11 @@ If you need use Laravel Facades, add the `aliases` array in `config/app.php`:
     ]
 ```
 
+If you need use Lumen Facades, uncomment the code in `bootstrap/app.php`:
+``` php
+    $app->withFacades();
+```
+
 ## Using
 ```php
 //example
@@ -38,7 +43,7 @@ class TestController extends controller {
 
     public function test ()
     {
-        $nodeValue = ZK::getNodeData('');
+        $nodeValue = Zk::getChildren('');
     }
 }
 

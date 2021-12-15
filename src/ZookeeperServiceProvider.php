@@ -19,7 +19,7 @@ class ZookeeperServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/zk_config.php' => config_path('zk_config.php')
+            __DIR__ . '/../config/zk_config.php' => base_path('config/zk_config.php')
         ]);
     }
 
